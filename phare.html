@@ -5633,7 +5633,230 @@ setInterval(
 );
 
 </script>
+<!-- =========================================================
+     NAVIGATION MOBILE PHARE
+     ========================================================= -->
+
+<style>
+@media (max-width: 760px) {
+
+  /* Barre de navigation téléphone */
+  #mobileNavigation {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 70px;
+    background: #ffffff;
+    border-top: 1px solid #e5e7eb;
+    box-shadow: 0 -3px 15px rgba(0,0,0,.12);
+    z-index: 999999;
+
+    display: flex;
+    align-items: stretch;
+    justify-content: space-around;
+
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  #mobileNavigation button {
+    flex: 1;
+    border: 0;
+    background: transparent;
+    color: #64748b;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    gap: 3px;
+    font-family: inherit;
+    cursor: pointer;
+  }
+
+  #mobileNavigation button .mobile-icon {
+    font-size: 21px;
+    line-height: 22px;
+  }
+
+  #mobileNavigation button .mobile-label {
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 13px;
+  }
+
+  #mobileNavigation button.mobile-active {
+    color: #2563eb;
+  }
+
+  /* On laisse de la place pour la barre */
+  body {
+    padding-bottom: 82px !important;
+  }
+}
+
+/* Invisible sur PC */
+@media (min-width: 761px) {
+  #mobileNavigation {
+    display: none !important;
+  }
+}
+</style>
+
+
+<nav id="mobileNavigation" aria-label="Navigation mobile">
+
+  <button type="button" onclick="mobileGo('home')">
+    <span class="mobile-icon">🏠</span>
+    <span class="mobile-label">Accueil</span>
+  </button>
+
+  <button type="button" onclick="mobileGo('reports')">
+    <span class="mobile-icon">🚨</span>
+    <span class="mobile-label">Signalements</span>
+  </button>
+
+  <button
+    type="button"
+    class="mobile-admin-button"
+    onclick="mobileGo('users')"
+  >
+    <span class="mobile-icon">👥</span>
+    <span class="mobile-label">Utilisateurs</span>
+  </button>
+
+  <button
+    type="button"
+    class="mobile-admin-button"
+    onclick="mobileGo('adminHome')"
+  >
+    <span class="mobile-icon">🛠️</span>
+    <span class="mobile-label">Gestion</span>
+  </button>
+
+  <button type="button" onclick="mobileGo('settings')">
+    <span class="mobile-icon">⚙️</span>
+    <span class="mobile-label">Paramètres</span>
+  </button>
+
+</nav>
+
+
+<script>
+(function () {
+
+  /*
+   * Navigation mobile.
+   * On utilise la fonction openPage déjà présente
+   * dans ton PHARE.
+   */
+  window.mobileGo = function(page) {
+
+    if (typeof window.openPage === "function") {
+      window.openPage(page);
+    } else {
+      console.error("PHARE : openPage() introuvable.");
+      return;
+    }
+
+    setTimeout(function () {
+      mobileUpdateActive(page);
+    }, 50);
+  };
+
+
+  /*
+   * Bouton actif
+   */
+  window.mobileUpdateActive = function(page) {
+
+    var buttons = document.querySelectorAll(
+      "#mobileNavigation button"
+    );
+
+    buttons.forEach(function(button) {
+      button.classList.remove("mobile-active");
+    });
+
+    var pages = {
+      "home": 0,
+      "reports": 1,
+      "users": 2,
+      "adminHome": 3,
+      "settings": 4
+    };
+
+    if (
+      Object.prototype.hasOwnProperty.call(pages, page) &&
+      buttons[pages[page]]
+    ) {
+      buttons[pages[page]].classList.add("mobile-active");
+    }
+  };
+
+
+  /*
+   * Affichage des boutons administrateur.
+   */
+  window.mobileUpdateAdmin = function() {
+
+    var adminButtons = document.querySelectorAll(
+      ".mobile-admin-button"
+    );
+
+    var isAdmin = false;
+
+    try {
+
+      if (
+        typeof currentUser !== "undefined" &&
+        currentUser &&
+        currentUser.role === "admin"
+      ) {
+        isAdmin = true;
+      }
+
+    } catch (e) {
+      isAdmin = false;
+    }
+
+    adminButtons.forEach(function(button) {
+
+      button.style.display = isAdmin
+        ? "flex"
+        : "none";
+
+    });
+  };
+
+
+  /*
+   * Vérification après chargement.
+   */
+  document.addEventListener(
+    "DOMContentLoaded",
+    function() {
+
+      mobileUpdateAdmin();
+
+      mobileUpdateActive("home");
+
+    }
+  );
+
+
+  /*
+   * Vérification lorsque l'utilisateur change.
+   */
+  setInterval(
+    mobileUpdateAdmin,
+    1000
+  );
+
+})();
+</script>
+
 
 </body>
-
 </html>
