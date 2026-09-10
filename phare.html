@@ -5635,4 +5635,178 @@ setInterval(
 </script>
 
 </body>
+  <!-- NAVIGATION MOBILE -->
+<nav class="mobile-bottom-nav" id="mobileBottomNav">
+
+  <button type="button" onclick="openPage('home')" data-page="home">
+    <span>🏠</span>
+    <small>Accueil</small>
+  </button>
+
+  <button type="button" onclick="openPage('reports')" data-page="reports">
+    <span>🚨</span>
+    <small>Signalements</small>
+  </button>
+
+  <button type="button" onclick="openPage('users')" data-page="users" class="mobile-admin-only">
+    <span>👥</span>
+    <small>Utilisateurs</small>
+  </button>
+
+  <button type="button" onclick="openPage('adminHome')" data-page="adminHome" class="mobile-admin-only">
+    <span>🛠️</span>
+    <small>Gestion</small>
+  </button>
+
+  <button type="button" onclick="openPage('settings')" data-page="settings">
+    <span>⚙️</span>
+    <small>Paramètres</small>
+  </button>
+
+</nav>
+
+<style>
+/* =========================================================
+   NAVIGATION MOBILE
+   PC : aucune modification
+   ========================================================= */
+
+.mobile-bottom-nav {
+  display: none;
+}
+
+@media (max-width: 760px) {
+
+  .mobile-bottom-nav {
+    position: fixed;
+    display: flex;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 68px;
+    background: rgba(255, 255, 255, 0.97);
+    border-top: 1px solid #e5e7eb;
+    box-shadow: 0 -4px 18px rgba(0,0,0,.08);
+    z-index: 99999;
+    padding: 5px 4px calc(5px + env(safe-area-inset-bottom));
+    box-sizing: border-box;
+    justify-content: space-around;
+  }
+
+  .mobile-bottom-nav button {
+    flex: 1;
+    border: 0;
+    background: transparent;
+    color: #64748b;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    border-radius: 12px;
+    cursor: pointer;
+    min-width: 0;
+    padding: 5px 2px;
+  }
+
+  .mobile-bottom-nav button span {
+    font-size: 20px;
+    line-height: 22px;
+  }
+
+  .mobile-bottom-nav button small {
+    font-size: 10px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .mobile-bottom-nav button.active {
+    color: #2563eb;
+    background: #eff6ff;
+  }
+
+  /* Laisse de la place au contenu au-dessus de la barre */
+  body {
+    padding-bottom: 76px;
+  }
+
+  /* La sidebar PC reste cachée sur téléphone */
+  .sidebar {
+    display: none !important;
+  }
+}
+</style>
+
+<script>
+/* =========================================================
+   NAVIGATION MOBILE
+   ========================================================= */
+
+(function () {
+
+  function updateMobileNavigation(page) {
+
+    document.querySelectorAll(
+      '.mobile-bottom-nav button[data-page]'
+    ).forEach(function (button) {
+
+      button.classList.remove('active');
+
+      if (button.dataset.page === page) {
+        button.classList.add('active');
+      }
+
+    });
+
+  }
+
+  /*
+   * On mémorise la fonction openPage existante.
+   * Cela permet de garder toute ta navigation actuelle.
+   */
+  if (typeof window.openPage === "function") {
+
+    const originalOpenPage = window.openPage;
+
+    window.openPage = function (page) {
+
+      originalOpenPage.apply(this, arguments);
+
+      updateMobileNavigation(page);
+    };
+
+  }
+
+  /*
+   * Affichage des boutons administrateur
+   */
+  function updateMobileAdminButtons() {
+
+    const adminButtons = document.querySelectorAll(
+      '.mobile-admin-only'
+    );
+
+    let admin = false;
+
+    try {
+      if (typeof currentUser !== "undefined" && currentUser) {
+        admin = currentUser.role === "admin";
+      }
+    } catch (e) {}
+
+    adminButtons.forEach(function (button) {
+      button.style.display = admin ? "flex" : "none";
+    });
+  }
+
+  updateMobileAdminButtons();
+
+  /*
+   * Si ton application change d'utilisateur,
+   * on vérifie régulièrement les droits.
+   */
+  setInterval(updateMobileAdminButtons, 1000);
+
+})();
+</script>
 </html>
