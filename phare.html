@@ -1,0 +1,5638 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#2563eb">
+  <title>PHARE</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    :root {
+      --blue: #2563eb;
+      --blue-dark: #1d4ed8;
+      --blue-light: #eff6ff;
+      --green: #16a34a;
+      --red: #dc2626;
+      --orange: #ea580c;
+      --yellow: #ca8a04;
+      --text: #172033;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --bg: #f5f7fb;
+      --white: #ffffff;
+      --shadow: 0 8px 25px rgba(15, 23, 42, .07);
+      --radius: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100%;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    button,
+    input,
+    textarea,
+    select {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* =========================
+       AUTH
+    ========================= */
+
+    #authPage {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background:
+        radial-gradient(circle at top right, #dbeafe 0, transparent 35%),
+        radial-gradient(circle at bottom left, #bfdbfe 0, transparent 30%),
+        var(--bg);
+    }
+
+    .auth-card {
+      width: 100%;
+      max-width: 450px;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      box-shadow: 0 20px 60px rgba(15, 23, 42, .12);
+      padding: 34px;
+    }
+
+    .logo {
+      width: 70px;
+      height: 70px;
+      margin: 0 auto 16px;
+      border-radius: 20px;
+      background: var(--blue);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      font-weight: 900;
+      box-shadow: 0 10px 25px rgba(37, 99, 235, .25);
+    }
+
+    .auth-card h1 {
+      margin: 0;
+      text-align: center;
+      font-size: 32px;
+      letter-spacing: -.5px;
+    }
+
+    .auth-subtitle {
+      text-align: center;
+      color: var(--muted);
+      margin: 8px 0 28px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 7px;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .form-control {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      padding: 13px 14px;
+      outline: none;
+      background: white;
+      color: var(--text);
+      transition: .2s;
+    }
+
+    .form-control:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, .1);
+    }
+
+    .primary-btn,
+    .secondary-btn,
+    .danger-btn,
+    .success-btn,
+    .warning-btn {
+      border: 0;
+      border-radius: 10px;
+      padding: 11px 15px;
+      font-weight: 700;
+      transition: .2s;
+    }
+
+    .primary-btn {
+      background: var(--blue);
+      color: white;
+    }
+
+    .primary-btn:hover {
+      background: var(--blue-dark);
+    }
+
+    .secondary-btn {
+      background: #e2e8f0;
+      color: #334155;
+    }
+
+    .danger-btn {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .success-btn {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .warning-btn {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .full-btn {
+      width: 100%;
+    }
+
+    .auth-links {
+      text-align: center;
+      margin-top: 18px;
+    }
+
+    .link-btn {
+      border: 0;
+      background: transparent;
+      color: var(--blue);
+      font-weight: 700;
+      padding: 6px;
+    }
+
+    .demo-info {
+      margin-top: 20px;
+      padding: 12px;
+      background: var(--blue-light);
+      border-radius: 10px;
+      color: #1e40af;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    /* =========================
+       APP
+    ========================= */
+
+    #app {
+      min-height: 100vh;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      height: 70px;
+      background: white;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 900;
+      font-size: 22px;
+    }
+
+    .brand-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--blue);
+      color: white;
+      border-radius: 11px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .user-chip {
+      background: #f1f5f9;
+      border-radius: 999px;
+      padding: 8px 13px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .layout {
+      display: flex;
+      min-height: calc(100vh - 70px);
+    }
+
+    .sidebar {
+      width: 245px;
+      flex-shrink: 0;
+      background: #fff;
+      border-right: 1px solid var(--border);
+      padding: 18px 12px;
+    }
+
+    .nav-title {
+      color: #94a3b8;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      padding: 10px 12px;
+      font-weight: 800;
+    }
+
+    .nav-btn {
+      width: 100%;
+      border: 0;
+      background: transparent;
+      padding: 12px;
+      border-radius: 10px;
+      text-align: left;
+      font-weight: 700;
+      color: #475569;
+      margin-bottom: 4px;
+    }
+
+    .nav-btn:hover,
+    .nav-btn.active {
+      background: var(--blue-light);
+      color: var(--blue);
+    }
+
+    .main {
+      flex: 1;
+      min-width: 0;
+      padding: 28px;
+    }
+
+    .page {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .page-header h2 {
+      margin: 0;
+      font-size: 28px;
+    }
+
+    .page-header p {
+      margin: 6px 0 0;
+      color: var(--muted);
+    }
+
+    .card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    /* =========================
+       STATS
+    ========================= */
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+
+    .stat {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+    }
+
+    .stat-label {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-size: 29px;
+      font-weight: 900;
+    }
+
+    /* =========================
+       INFO BLOCKS
+    ========================= */
+
+    .info-block {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      margin-bottom: 18px;
+      overflow: hidden;
+    }
+
+    .info-block-header {
+      padding: 18px 20px 10px;
+    }
+
+    .info-block-header h3 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .info-content {
+      padding: 8px 20px 20px;
+      line-height: 1.65;
+      overflow-wrap: anywhere;
+    }
+
+    .info-content img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 10px;
+    }
+
+    .info-content a {
+      color: var(--blue);
+      text-decoration: underline;
+    }
+
+    .admin-block {
+      border-left: 4px solid var(--blue);
+    }
+
+    .block-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 0 20px 18px;
+    }
+
+    .move-buttons {
+      display: flex;
+      gap: 5px;
+    }
+
+    /* =========================
+       EDITOR
+    ========================= */
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 9px;
+      border: 1px solid var(--border);
+      border-bottom: 0;
+      border-radius: 10px 10px 0 0;
+      background: #f8fafc;
+    }
+
+    .tool-btn {
+      border: 1px solid var(--border);
+      background: white;
+      border-radius: 7px;
+      min-width: 36px;
+      height: 34px;
+      font-weight: 800;
+    }
+
+    .tool-btn:hover {
+      background: var(--blue-light);
+      color: var(--blue);
+    }
+
+    .editor {
+      min-height: 180px;
+      border: 1px solid var(--border);
+      border-radius: 0 0 10px 10px;
+      padding: 14px;
+      outline: none;
+      background: white;
+      line-height: 1.6;
+    }
+
+    .editor:focus {
+      border-color: var(--blue);
+    }
+
+    /* =========================
+       REPORTS
+    ========================= */
+
+    .report-form {
+      display: grid;
+      grid-template-columns: 180px 1fr auto;
+      gap: 10px;
+      align-items: end;
+    }
+
+    .report-comment {
+      min-height: 46px;
+      resize: vertical;
+    }
+
+    .reports-table-wrap {
+      overflow-x: auto;
+    }
+
+    .reports-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .reports-table th,
+    .reports-table td {
+      text-align: left;
+      padding: 13px 10px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    .reports-table th {
+      font-size: 12px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 5px 9px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .badge-physical {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .badge-verbal {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .badge-other {
+      background: #e0e7ff;
+      color: #3730a3;
+    }
+
+    .empty {
+      text-align: center;
+      color: var(--muted);
+      padding: 30px;
+    }
+
+    /* =========================
+       USERS
+    ========================= */
+
+    .search-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .users-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    .user-card {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      background: white;
+    }
+
+    .user-name {
+      font-weight: 900;
+      font-size: 17px;
+      margin-bottom: 7px;
+    }
+
+    .user-meta {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 13px;
+    }
+
+    .user-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+
+    /* =========================
+       SETTINGS
+    ========================= */
+
+    .setting-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .setting-row:last-child {
+      border-bottom: 0;
+    }
+
+    .setting-title {
+      font-weight: 800;
+    }
+
+    .setting-description {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 4px;
+    }
+
+    .switch {
+      position: relative;
+      width: 52px;
+      height: 30px;
+      flex-shrink: 0;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      inset: 0;
+      background: #cbd5e1;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: .2s;
+    }
+
+    .slider:before {
+      content: "";
+      position: absolute;
+      width: 22px;
+      height: 22px;
+      left: 4px;
+      top: 4px;
+      background: white;
+      border-radius: 50%;
+      transition: .2s;
+      box-shadow: 0 1px 3px rgba(0,0,0,.2);
+    }
+
+    .switch input:checked + .slider {
+      background: var(--blue);
+    }
+
+    .switch input:checked + .slider:before {
+      transform: translateX(22px);
+    }
+
+    .maintenance {
+      background: #fff7ed;
+      border: 1px solid #fed7aa;
+      color: #9a3412;
+      padding: 14px 18px;
+      border-radius: 12px;
+      margin-bottom: 18px;
+      font-weight: 700;
+    }
+
+    /* =========================
+       MODALS
+    ========================= */
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: rgba(15, 23, 42, .58);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal {
+      width: 100%;
+      max-width: 500px;
+      background: white;
+      border-radius: 18px;
+      box-shadow: 0 25px 80px rgba(0,0,0,.2);
+      padding: 24px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal h3 {
+      margin-top: 0;
+      margin-bottom: 8px;
+    }
+
+    .modal p {
+      color: var(--muted);
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 9px;
+      margin-top: 20px;
+    }
+
+    /* =========================
+       TOAST
+    ========================= */
+
+    #toastContainer {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 200;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      pointer-events: none;
+    }
+
+    .toast {
+      background: #0f172a;
+      color: white;
+      padding: 12px 16px;
+      border-radius: 10px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.2);
+      animation: toastIn .2s ease;
+      max-width: 350px;
+      font-size: 14px;
+    }
+
+    @keyframes toastIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* =========================
+       MOBILE
+    ========================= */
+
+    body.force-phone .sidebar {
+      display: none;
+    }
+
+    body.force-phone .topbar {
+      height: auto;
+      min-height: 62px;
+      padding: 10px 13px;
+    }
+
+    body.force-phone .main {
+      padding: 15px;
+    }
+
+    body.force-phone .stats {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    body.force-phone .users-grid {
+      grid-template-columns: 1fr;
+    }
+
+    body.force-phone .report-form {
+      grid-template-columns: 1fr;
+    }
+
+    body.force-phone .page-header {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+
+    body.force-phone .top-actions .desktop-only {
+      display: none;
+    }
+
+    body.force-phone .brand {
+      font-size: 18px;
+    }
+
+    @media (max-width: 900px) {
+      .sidebar {
+        width: 210px;
+      }
+
+      .stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .users-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .report-form {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .report-form .report-submit {
+        grid-column: span 2;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .sidebar {
+        display: none;
+      }
+
+      .topbar {
+        height: auto;
+        min-height: 62px;
+        padding: 10px 13px;
+      }
+
+      .main {
+        padding: 15px;
+      }
+
+      .stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .users-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .report-form {
+        grid-template-columns: 1fr;
+      }
+
+      .report-form .report-submit {
+        grid-column: auto;
+      }
+
+      .page-header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .user-chip {
+        display: none;
+      }
+
+      .brand {
+        font-size: 18px;
+      }
+
+      .brand-icon {
+        width: 34px;
+        height: 34px;
+      }
+
+      .auth-card {
+        padding: 25px 20px;
+      }
+
+      .setting-row {
+        align-items: flex-start;
+      }
+
+      .reports-table th,
+      .reports-table td {
+        min-width: 110px;
+      }
+    }
+
+    @media (max-width: 430px) {
+      .stats {
+        grid-template-columns: 1fr 1fr;
+        gap: 9px;
+      }
+
+      .stat {
+        padding: 13px;
+      }
+
+      .stat-value {
+        font-size: 24px;
+      }
+
+      .card {
+        padding: 15px;
+      }
+
+      .page-header h2 {
+        font-size: 23px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- =========================
+       AUTH PAGE
+  ========================== -->
+
+  <section id="authPage">
+    <div class="auth-card">
+
+      <div class="logo">PH</div>
+
+      <h1>PHARE</h1>
+      <div class="auth-subtitle">
+        Plateforme de prévention, d'information et de signalement
+      </div>
+
+      <form id="loginForm">
+
+        <div class="form-group">
+          <label for="loginFirstName">Prénom</label>
+          <input
+            id="loginFirstName"
+            class="form-control"
+            type="text"
+            autocomplete="given-name"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="loginLastName">Nom</label>
+          <input
+            id="loginLastName"
+            class="form-control"
+            type="text"
+            autocomplete="family-name"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="loginPassword">Mot de passe</label>
+          <input
+            id="loginPassword"
+            class="form-control"
+            type="password"
+            autocomplete="current-password"
+            required
+          >
+        </div>
+
+        <button class="primary-btn full-btn" type="submit">
+          Se connecter
+        </button>
+
+      </form>
+
+      <div class="auth-links">
+        <button id="forgotPasswordBtn" class="link-btn" type="button">
+          Mot de passe oublié ?
+        </button>
+      </div>
+
+      <div class="demo-info">
+        <strong>Mode de fonctionnement :</strong><br>
+        Lorsqu'un nouveau compte est utilisé pour la première fois,
+        la personne choisit librement son mot de passe.
+        Ce mot de passe reste ensuite valable pour ses connexions futures,
+        sauf modification ou réinitialisation par l'administrateur principal.
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- =========================
+       APPLICATION
+  ========================== -->
+
+  <section id="app" class="hidden">
+
+    <header class="topbar">
+
+      <div class="brand">
+        <div class="brand-icon">PH</div>
+        <span>PHARE</span>
+      </div>
+
+      <div class="top-actions">
+
+        <div id="currentUserChip" class="user-chip"></div>
+
+        <button
+          id="logoutBtn"
+          class="secondary-btn"
+          type="button"
+        >
+          🚪 Déconnexion
+        </button>
+
+      </div>
+
+    </header>
+
+
+    <div class="layout">
+
+      <!-- SIDEBAR -->
+      <aside class="sidebar">
+
+        <div class="nav-title">Navigation</div>
+
+        <button class="nav-btn active" data-page="homePage">
+          🏠 Accueil
+        </button>
+
+        <button class="nav-btn" data-page="reportsPage">
+          🚨 Signalements
+        </button>
+
+        <button
+          id="usersNavBtn"
+          class="nav-btn"
+          data-page="usersPage"
+        >
+          👥 Utilisateurs
+        </button>
+
+        <button
+          id="adminHomeNavBtn"
+          class="nav-btn"
+          data-page="adminHomePage"
+        >
+          🛠️ Gestion de l'accueil
+        </button>
+
+        <button
+          id="settingsNavBtn"
+          class="nav-btn"
+          data-page="settingsPage"
+        >
+          ⚙️ Paramètres
+        </button>
+
+        <div class="nav-title">Compte</div>
+
+        <button
+          class="nav-btn"
+          id="sidebarLogout"
+          type="button"
+        >
+          🚪 Se déconnecter
+        </button>
+
+      </aside>
+
+
+      <!-- MAIN -->
+      <main class="main">
+
+        <!-- =========================
+             USER HOME
+        ========================== -->
+
+        <section id="homePage" class="page">
+
+          <div class="page-header">
+            <div>
+              <h2>Accueil</h2>
+              <p>
+                Informations publiées sur PHARE.
+              </p>
+            </div>
+          </div>
+
+          <div id="maintenanceUserNotice" class="maintenance hidden">
+            ⚠️ Le site est actuellement en maintenance.
+          </div>
+
+          <div id="userInfoBlocks"></div>
+
+        </section>
+
+
+        <!-- =========================
+             REPORTS
+        ========================== -->
+
+        <section id="reportsPage" class="page hidden">
+
+          <div class="page-header">
+            <div>
+              <h2>🚨 Signalements</h2>
+              <p>
+                Signaler une situation en quelques secondes.
+              </p>
+            </div>
+          </div>
+
+          <!-- USER REPORT FORM -->
+          <div id="reportFormCard" class="card">
+
+            <h3>Faire un signalement</h3>
+
+            <form id="reportForm">
+
+              <div class="report-form">
+
+                <div class="form-group">
+                  <label for="reportType">Type</label>
+
+                  <select
+                    id="reportType"
+                    class="form-control"
+                    required
+                  >
+                    <option value="">Choisir</option>
+                    <option value="physique">Physique</option>
+                    <option value="verbal">Verbal</option>
+                    <option value="autre">Autre</option>
+                  </select>
+
+                </div>
+
+                <div
+                  id="otherTypeGroup"
+                  class="form-group hidden"
+                >
+                  <label for="otherType">
+                    Préciser le type
+                  </label>
+
+                  <input
+                    id="otherType"
+                    class="form-control"
+                    type="text"
+                  >
+                </div>
+
+                <div
+                  id="commentGroup"
+                  class="form-group"
+                  style="grid-column: 1 / -1;"
+                >
+                  <label for="reportComment">
+                    Commentaire
+                  </label>
+
+                  <textarea
+                    id="reportComment"
+                    class="form-control report-comment"
+                    placeholder="Décris la situation..."
+                    required
+                  ></textarea>
+                </div>
+
+                <button
+                  class="primary-btn report-submit"
+                  type="submit"
+                >
+                  Envoyer le signalement
+                </button>
+
+              </div>
+
+            </form>
+
+          </div>
+
+
+          <!-- ADMIN REPORTS -->
+          <div
+            id="adminReportsCard"
+            class="card hidden"
+          >
+
+            <div class="page-header" style="margin-bottom:15px;">
+              <div>
+                <h3 style="margin:0;">
+                  Signalements actifs
+                </h3>
+
+                <p style="margin:5px 0 0;">
+                  Les signalements sont synchronisés en temps réel
+                  sur les appareils administrateurs.
+                </p>
+              </div>
+            </div>
+
+            <div class="reports-table-wrap">
+
+              <table class="reports-table">
+
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Commentaire</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+
+                <tbody id="reportsTableBody"></tbody>
+
+              </table>
+
+            </div>
+
+          </div>
+
+        </section>
+
+
+        <!-- =========================
+             USERS
+        ========================== -->
+
+        <section
+          id="usersPage"
+          class="page hidden"
+        >
+
+          <div class="page-header">
+            <div>
+              <h2>👥 Utilisateurs</h2>
+              <p>
+                Toutes les personnes disposant d'un compte PHARE.
+              </p>
+            </div>
+          </div>
+
+          <div class="card">
+
+            <div class="search-row">
+
+              <input
+                id="userSearch"
+                class="form-control"
+                placeholder="Rechercher par prénom ou nom..."
+              >
+
+            </div>
+
+            <div id="usersGrid" class="users-grid"></div>
+
+          </div>
+
+        </section>
+
+
+        <!-- =========================
+             ADMIN HOME
+        ========================== -->
+
+        <section
+          id="adminHomePage"
+          class="page hidden"
+        >
+
+          <div class="page-header">
+
+            <div>
+              <h2>🛠️ Gestion de l'accueil</h2>
+              <p>
+                Crée plusieurs blocs indépendants et choisis ceux
+                qui sont publiés.
+              </p>
+            </div>
+
+            <button
+              id="newBlockBtn"
+              class="primary-btn"
+              type="button"
+            >
+              ＋ Nouveau bloc
+            </button>
+
+          </div>
+
+          <div id="adminBlocks"></div>
+
+        </section>
+
+
+        <!-- =========================
+             SETTINGS
+        ========================== -->
+
+        <section
+          id="settingsPage"
+          class="page hidden"
+        >
+
+          <div class="page-header">
+            <div>
+              <h2>⚙️ Paramètres</h2>
+              <p>
+                Gestion de ton compte et de la plateforme.
+              </p>
+            </div>
+          </div>
+
+
+          <div class="card">
+
+            <h3>Mon compte</h3>
+
+            <div class="setting-row">
+
+              <div>
+                <div class="setting-title">
+                  Modifier mon mot de passe
+                </div>
+
+                <div class="setting-description">
+                  Ton mot de passe personnel peut être changé ici.
+                </div>
+              </div>
+
+              <button
+                id="myPasswordBtn"
+                class="secondary-btn"
+                type="button"
+              >
+                Modifier
+              </button>
+
+            </div>
+
+          </div>
+
+
+          <div
+            id="adminSettingsCard"
+            class="card hidden"
+          >
+
+            <h3>Administration</h3>
+
+            <div class="setting-row">
+
+              <div>
+                <div class="setting-title">
+                  Maintenance
+                </div>
+
+                <div class="setting-description">
+                  Tout le monde est déconnecté pendant la maintenance,
+                  sauf l'administrateur principal.
+                </div>
+              </div>
+
+              <label class="switch">
+                <input
+                  id="maintenanceToggle"
+                  type="checkbox"
+                >
+                <span class="slider"></span>
+              </label>
+
+            </div>
+
+
+            <div class="setting-row">
+
+              <div>
+                <div class="setting-title">
+                  Version d'affichage
+                </div>
+
+                <div class="setting-description">
+                  Sur ordinateur, un administrateur peut forcer
+                  l'affichage téléphone.
+                </div>
+              </div>
+
+              <div style="display:flex;gap:7px;flex-wrap:wrap;">
+
+                <button
+                  id="desktopModeBtn"
+                  class="secondary-btn"
+                  type="button"
+                >
+                  🖥️ Ordinateur
+                </button>
+
+                <button
+                  id="phoneModeBtn"
+                  class="secondary-btn"
+                  type="button"
+                >
+                  📱 Téléphone
+                </button>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </section>
+
+      </main>
+
+    </div>
+
+  </section>
+
+
+  <!-- =========================
+       FIRST LOGIN MODAL
+  ========================== -->
+
+  <div
+    id="firstLoginModal"
+    class="modal-backdrop hidden"
+  >
+
+    <div class="modal">
+
+      <h3>🔐 Première connexion</h3>
+
+      <p>
+        Ton mot de passe vient d'être réinitialisé.
+        Tu dois maintenant choisir ton nouveau mot de passe personnel.
+      </p>
+
+      <form id="firstLoginForm">
+
+        <div class="form-group">
+
+          <label for="firstLoginPassword">
+            Nouveau mot de passe
+          </label>
+
+          <input
+            id="firstLoginPassword"
+            class="form-control"
+            type="password"
+            minlength="6"
+            required
+          >
+
+        </div>
+
+        <div class="form-group">
+
+          <label for="firstLoginPasswordConfirm">
+            Confirmer
+          </label>
+
+          <input
+            id="firstLoginPasswordConfirm"
+            class="form-control"
+            type="password"
+            minlength="6"
+            required
+          >
+
+        </div>
+
+        <div class="modal-actions">
+
+          <button
+            class="primary-btn"
+            type="submit"
+          >
+            Enregistrer mon mot de passe
+          </button>
+
+        </div>
+
+      </form>
+
+    </div>
+
+  </div>
+
+
+  <!-- =========================
+       FORGOT PASSWORD MODAL
+  ========================== -->
+
+  <div
+    id="forgotModal"
+    class="modal-backdrop hidden"
+  >
+
+    <div class="modal">
+
+      <h3>Mot de passe oublié</h3>
+
+      <p>
+        Indique ton prénom et ton nom pour envoyer une demande
+        à l'administrateur principal.
+      </p>
+
+      <form id="forgotForm">
+
+        <div class="form-group">
+
+          <label for="forgotFirstName">
+            Prénom
+          </label>
+
+          <input
+            id="forgotFirstName"
+            class="form-control"
+            required
+          >
+
+        </div>
+
+        <div class="form-group">
+
+          <label for="forgotLastName">
+            Nom
+          </label>
+
+          <input
+            id="forgotLastName"
+            class="form-control"
+            required
+          >
+
+        </div>
+
+        <div class="modal-actions">
+
+          <button
+            id="closeForgotBtn"
+            class="secondary-btn"
+            type="button"
+          >
+            Annuler
+          </button>
+
+          <button
+            class="primary-btn"
+            type="submit"
+          >
+            Envoyer la demande
+          </button>
+
+        </div>
+
+      </form>
+
+    </div>
+
+  </div>
+
+
+  <!-- =========================
+       ADMIN PASSWORD RESET
+  ========================== -->
+
+  <div
+    id="resetPasswordModal"
+    class="modal-backdrop hidden"
+  >
+
+    <div class="modal">
+
+      <h3>🔑 Réinitialiser un mot de passe</h3>
+
+      <p id="resetPasswordDescription"></p>
+
+      <form id="resetPasswordForm">
+
+        <div class="form-group">
+
+          <label for="resetPasswordInput">
+            Nouveau mot de passe temporaire
+          </label>
+
+          <input
+            id="resetPasswordInput"
+            class="form-control"
+            type="password"
+            minlength="6"
+            required
+          >
+
+        </div>
+
+        <div class="form-group">
+
+          <label for="resetPasswordConfirm">
+            Confirmer
+          </label>
+
+          <input
+            id="resetPasswordConfirm"
+            class="form-control"
+            type="password"
+            minlength="6"
+            required
+          >
+
+        </div>
+
+        <div class="modal-actions">
+
+          <button
+            id="closeResetPasswordBtn"
+            class="secondary-btn"
+            type="button"
+          >
+            Annuler
+          </button>
+
+          <button
+            class="primary-btn"
+            type="submit"
+          >
+            Réinitialiser
+          </button>
+
+        </div>
+
+      </form>
+
+    </div>
+
+  </div>
+
+
+  <!-- =========================
+       BLOCK EDITOR MODAL
+  ========================== -->
+
+  <div
+    id="blockModal"
+    class="modal-backdrop hidden"
+  >
+
+    <div
+      class="modal"
+      style="max-width:800px;"
+    >
+
+      <h3 id="blockModalTitle">
+        Nouveau bloc
+      </h3>
+
+      <form id="blockForm">
+
+        <input
+          id="blockId"
+          type="hidden"
+        >
+
+        <div class="form-group">
+
+          <label for="blockTitle">
+            Titre
+          </label>
+
+          <input
+            id="blockTitle"
+            class="form-control"
+            required
+          >
+
+        </div>
+
+        <div class="form-group">
+
+          <label>
+            Contenu
+          </label>
+
+          <div class="toolbar">
+
+            <button
+              type="button"
+              class="tool-btn"
+              data-command="bold"
+              title="Gras"
+            >
+              B
+            </button>
+
+            <button
+              type="button"
+              class="tool-btn"
+              data-command="italic"
+              title="Italique"
+            >
+              I
+            </button>
+
+            <button
+              type="button"
+              class="tool-btn"
+              data-command="underline"
+              title="Souligné"
+            >
+              U
+            </button>
+
+            <button
+              type="button"
+              class="tool-btn"
+              id="insertImageBtn"
+              title="Image"
+            >
+              🖼️
+            </button>
+
+            <button
+              type="button"
+              class="tool-btn"
+              id="insertLinkBtn"
+              title="Lien"
+            >
+              🔗
+            </button>
+
+            <input
+              id="imageInput"
+              type="file"
+              accept="image/*"
+              class="hidden"
+            >
+
+          </div>
+
+          <div
+            id="blockEditor"
+            class="editor"
+            contenteditable="true"
+          ></div>
+
+        </div>
+
+        <div class="form-group">
+
+          <label style="display:flex;gap:9px;align-items:center;">
+
+            <input
+              id="blockPublished"
+              type="checkbox"
+              checked
+            >
+
+            Publier ce bloc
+
+          </label>
+
+        </div>
+
+        <div class="modal-actions">
+
+          <button
+            id="closeBlockBtn"
+            class="secondary-btn"
+            type="button"
+          >
+            Annuler
+          </button>
+
+          <button
+            class="primary-btn"
+            type="submit"
+          >
+            Enregistrer
+          </button>
+
+        </div>
+
+      </form>
+
+    </div>
+
+  </div>
+
+
+  <!-- =========================
+       ADMIN REQUEST MODAL
+  ========================== -->
+
+  <div
+    id="requestsModal"
+    class="modal-backdrop hidden"
+  >
+
+    <div class="modal">
+
+      <h3>🔔 Demandes de mot de passe</h3>
+
+      <div id="resetRequestsList"></div>
+
+      <div class="modal-actions">
+
+        <button
+          id="closeRequestsBtn"
+          class="secondary-btn"
+          type="button"
+        >
+          Fermer
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <div id="toastContainer"></div>
+
+
+<script>
+/* ============================================================
+   PHARE
+   Application complète
+============================================================ */
+
+
+/* ============================================================
+   SUPABASE
+============================================================ */
+
+const SUPABASE_URL = "https://TON-PROJET.supabase.co";
+const SUPABASE_ANON_KEY = "TA_CLE_PUBLISHABLE";
+
+const SUPABASE_CONFIGURED =
+  SUPABASE_URL !== "https://TON-PROJET.supabase.co" &&
+  SUPABASE_ANON_KEY !== "TA_CLE_PUBLISHABLE";
+
+const sb = SUPABASE_CONFIGURED
+  ? window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_ANON_KEY
+    )
+  : null;
+
+
+/* ============================================================
+   ADMIN PRINCIPAL
+   Le nom complet reste uniquement dans la logique interne.
+   L'interface n'affiche jamais le nom de famille.
+============================================================ */
+
+const MAIN_ADMIN_FIRST_NAME = "Ziyad";
+const MAIN_ADMIN_LAST_NAME = "HAMIED";
+
+
+/* ============================================================
+   STORAGE LOCAL DEMO
+============================================================ */
+
+const STORAGE_USERS = "phare_users";
+const STORAGE_BLOCKS = "phare_blocks";
+const STORAGE_REPORTS = "phare_reports";
+const STORAGE_REQUESTS = "phare_requests";
+const STORAGE_SETTINGS = "phare_settings";
+const STORAGE_CURRENT_USER = "phare_current_user";
+
+
+/* ============================================================
+   ETAT
+============================================================ */
+
+let currentUser = null;
+let reports = [];
+let blocks = [];
+let users = [];
+let resetRequests = [];
+
+let pendingResetUser = null;
+let pendingResetRequestId = null;
+
+let realtimeChannels = [];
+
+let forcedPhoneMode = false;
+
+
+/* ============================================================
+   UTILITAIRES
+============================================================ */
+
+function uid() {
+  if (crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+
+  return "id-" +
+    Date.now() +
+    "-" +
+    Math.random().toString(16).slice(2);
+}
+
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+
+function normalize(value) {
+  return String(value ?? "")
+    .trim()
+    .toLowerCase();
+}
+
+
+function isMainAdmin(user) {
+  if (!user) return false;
+
+  return (
+    normalize(user.first_name) === normalize(MAIN_ADMIN_FIRST_NAME) &&
+    normalize(user.last_name) === normalize(MAIN_ADMIN_LAST_NAME)
+  );
+}
+
+
+function isAdmin(user) {
+  return !!user && user.role === "admin";
+}
+
+
+/*
+  Important :
+  Le nom de famille de l'administrateur principal
+  n'est jamais affiché dans l'interface.
+*/
+function displayName(user) {
+  if (!user) return "";
+
+  if (isMainAdmin(user)) {
+    return "Ziyad";
+  }
+
+  return (
+    `${user.first_name || ""} ${user.last_name || ""}`
+      .trim()
+  );
+}
+
+
+function displayRole(user) {
+  if (isMainAdmin(user)) {
+    return "Administrateur principal";
+  }
+
+  if (isAdmin(user)) {
+    return "Administrateur";
+  }
+
+  return "Utilisateur";
+}
+
+
+function showToast(message) {
+  const container =
+    document.getElementById("toastContainer");
+
+  const toast =
+    document.createElement("div");
+
+  toast.className = "toast";
+  toast.textContent = message;
+
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.remove();
+  }, 3200);
+}
+
+
+function getLocal(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key);
+
+    if (!raw) return fallback;
+
+    return JSON.parse(raw);
+  } catch {
+    return fallback;
+  }
+}
+
+
+function setLocal(key, value) {
+  localStorage.setItem(
+    key,
+    JSON.stringify(value)
+  );
+}
+
+
+/* ============================================================
+   INITIALISATION DEMO
+============================================================ */
+
+function initializeLocalData() {
+
+  if (!localStorage.getItem(STORAGE_USERS)) {
+    setLocal(STORAGE_USERS, []);
+  }
+
+  if (!localStorage.getItem(STORAGE_BLOCKS)) {
+    setLocal(STORAGE_BLOCKS, [
+      {
+        id: uid(),
+        title: "Bienvenue sur PHARE",
+        content_html:
+          "<p>Bienvenue sur la plateforme PHARE.</p>" +
+          "<p>Retrouve ici les informations importantes " +
+          "publiées par l'administration.</p>",
+        position: 0,
+        published: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+    ]);
+  }
+
+  if (!localStorage.getItem(STORAGE_REPORTS)) {
+    setLocal(STORAGE_REPORTS, []);
+  }
+
+  if (!localStorage.getItem(STORAGE_REQUESTS)) {
+    setLocal(STORAGE_REQUESTS, []);
+  }
+
+  if (!localStorage.getItem(STORAGE_SETTINGS)) {
+    setLocal(STORAGE_SETTINGS, {
+      maintenance: false
+    });
+  }
+}
+
+
+/* ============================================================
+   LOCAL USERS
+============================================================ */
+
+function loadLocalUsers() {
+  users = getLocal(STORAGE_USERS, []);
+}
+
+
+function saveLocalUsers() {
+  setLocal(STORAGE_USERS, users);
+}
+
+
+function loadLocalBlocks() {
+  blocks = getLocal(STORAGE_BLOCKS, []);
+  blocks.sort(
+    (a, b) =>
+      Number(a.position || 0) -
+      Number(b.position || 0)
+  );
+}
+
+
+function saveLocalBlocks() {
+  setLocal(STORAGE_BLOCKS, blocks);
+}
+
+
+function loadLocalReports() {
+  reports = getLocal(STORAGE_REPORTS, []);
+}
+
+
+function saveLocalReports() {
+  setLocal(STORAGE_REPORTS, reports);
+}
+
+
+function loadLocalRequests() {
+  resetRequests =
+    getLocal(STORAGE_REQUESTS, []);
+}
+
+
+function saveLocalRequests() {
+  setLocal(
+    STORAGE_REQUESTS,
+    resetRequests
+  );
+}
+
+
+function loadLocalSettings() {
+  return getLocal(
+    STORAGE_SETTINGS,
+    { maintenance: false }
+  );
+}
+
+
+function saveLocalSettings(settings) {
+  setLocal(
+    STORAGE_SETTINGS,
+    settings
+  );
+}
+
+
+/* ============================================================
+   AUTH LOCAL
+============================================================ */
+
+async function loginLocal(
+  firstName,
+  lastName,
+  password
+) {
+
+  loadLocalUsers();
+
+  let user =
+    users.find(
+      u =>
+        normalize(u.first_name) === normalize(firstName) &&
+        normalize(u.last_name) === normalize(lastName)
+    );
+
+  /*
+    Nouveau compte :
+    Le mot de passe choisi à la création devient
+    directement son vrai mot de passe.
+  */
+  if (!user) {
+
+    const newUser = {
+      id: uid(),
+      first_name: firstName.trim(),
+      last_name: lastName.trim(),
+      password: password,
+      role:
+        normalize(firstName) === normalize(MAIN_ADMIN_FIRST_NAME) &&
+        normalize(lastName) === normalize(MAIN_ADMIN_LAST_NAME)
+          ? "admin"
+          : "user",
+
+      must_change_password: false,
+      first_login_completed: true,
+
+      banned: false,
+
+      created_at:
+        new Date().toISOString(),
+
+      last_login:
+        new Date().toISOString()
+    };
+
+    users.push(newUser);
+    saveLocalUsers();
+
+    return newUser;
+  }
+
+
+  /*
+    Compte banni :
+    blocage définitif.
+  */
+  if (user.banned) {
+    throw new Error(
+      "Ce compte est définitivement banni."
+    );
+  }
+
+
+  if (user.password !== password) {
+    throw new Error(
+      "Prénom, nom ou mot de passe incorrect."
+    );
+  }
+
+
+  user.last_login =
+    new Date().toISOString();
+
+  saveLocalUsers();
+
+  return user;
+}
+
+
+/* ============================================================
+   AUTH SUPABASE
+============================================================ */
+
+async function loginSupabase(
+  firstName,
+  lastName,
+  password
+) {
+
+  /*
+    Recherche du profil par prénom + nom.
+  */
+
+  const { data: profiles, error } =
+    await sb
+      .from("profiles")
+      .select("*")
+      .ilike("first_name", firstName.trim())
+      .ilike("last_name", lastName.trim());
+
+  if (error) {
+    throw error;
+  }
+
+  let profile =
+    profiles && profiles.length
+      ? profiles[0]
+      : null;
+
+
+  /*
+    Pour une installation Supabase,
+    la création des comptes peut être réalisée
+    par une Edge Function sécurisée.
+
+    Si aucun profil n'existe, on essaye create-account.
+  */
+
+  if (!profile) {
+
+    const { data, error } =
+      await sb.functions.invoke(
+        "create-account",
+        {
+          body: {
+            first_name: firstName.trim(),
+            last_name: lastName.trim(),
+            password
+          }
+        }
+      );
+
+    if (error) {
+      throw new Error(
+        "Ce compte n'existe pas encore ou la fonction create-account n'est pas configurée."
+      );
+    }
+
+    profile = data?.profile;
+
+    if (!profile) {
+      throw new Error(
+        "Impossible de créer le compte."
+      );
+    }
+  }
+
+
+  /*
+    Vérification ban :
+    la table bannissements est utilisée
+    pour éviter de dépendre d'une colonne
+    profiles.banned.
+  */
+
+  const { data: bans } =
+    await sb
+      .from("bannissements")
+      .select("id")
+      .eq("user_id", profile.id)
+      .limit(1);
+
+  if (bans && bans.length > 0) {
+    throw new Error(
+      "Ce compte est définitivement banni."
+    );
+  }
+
+
+  if (!profile.auth_email) {
+    throw new Error(
+      "Ce compte ne possède pas d'adresse Auth configurée."
+    );
+  }
+
+
+  const { data: authData, error: authError } =
+    await sb.auth.signInWithPassword({
+      email: profile.auth_email,
+      password
+    });
+
+  if (authError) {
+    throw authError;
+  }
+
+
+  await sb
+    .from("profiles")
+    .update({
+      last_login:
+        new Date().toISOString()
+    })
+    .eq("id", profile.id);
+
+
+  return {
+    ...profile,
+    auth_user: authData.user
+  };
+}
+
+
+/* ============================================================
+   LOGIN GLOBAL
+============================================================ */
+
+async function login(
+  firstName,
+  lastName,
+  password
+) {
+
+  let user;
+
+  if (SUPABASE_CONFIGURED) {
+    user =
+      await loginSupabase(
+        firstName,
+        lastName,
+        password
+      );
+  } else {
+    user =
+      await loginLocal(
+        firstName,
+        lastName,
+        password
+      );
+  }
+
+  currentUser = user;
+
+  localStorage.setItem(
+    STORAGE_CURRENT_USER,
+    JSON.stringify(user)
+  );
+
+  await checkMaintenance();
+
+  /*
+    Si un administrateur a réinitialisé le mot de passe,
+    le compte passe obligatoirement par la première connexion.
+  */
+  if (user.must_change_password === true) {
+
+    showApp();
+
+    await refreshEverything();
+
+    openFirstLoginModal();
+
+    return;
+  }
+
+  showApp();
+
+  await refreshEverything();
+}
+
+
+/* ============================================================
+   AFFICHAGE APP
+============================================================ */
+
+function showApp() {
+
+  document
+    .getElementById("authPage")
+    .classList.add("hidden");
+
+  document
+    .getElementById("app")
+    .classList.remove("hidden");
+
+  document
+    .getElementById("currentUserChip")
+    .textContent =
+      `${displayName(currentUser)} · ${displayRole(currentUser)}`;
+
+  configureNavigation();
+  configureAdminVisibility();
+}
+
+
+/* ============================================================
+   NAVIGATION
+============================================================ */
+
+function configureNavigation() {
+
+  const buttons =
+    document.querySelectorAll(".nav-btn[data-page]");
+
+  buttons.forEach(btn => {
+
+    btn.onclick = () => {
+
+      const page =
+        btn.dataset.page;
+
+      openPage(page);
+
+    };
+
+  });
+}
+
+
+function openPage(pageId) {
+
+  document
+    .querySelectorAll(".main .page")
+    .forEach(page => {
+      page.classList.add("hidden");
+    });
+
+  const page =
+    document.getElementById(pageId);
+
+  if (page) {
+    page.classList.remove("hidden");
+  }
+
+
+  document
+    .querySelectorAll(".nav-btn[data-page]")
+    .forEach(btn => {
+      btn.classList.toggle(
+        "active",
+        btn.dataset.page === pageId
+      );
+    });
+
+
+  if (pageId === "homePage") {
+    renderUserBlocks();
+  }
+
+  if (pageId === "reportsPage") {
+    renderReports();
+  }
+
+  if (pageId === "usersPage") {
+    renderUsers();
+  }
+
+  if (pageId === "adminHomePage") {
+    renderAdminBlocks();
+  }
+}
+
+
+/* ============================================================
+   ADMIN VISIBILITY
+============================================================ */
+
+function configureAdminVisibility() {
+
+  const admin =
+    isAdmin(currentUser);
+
+  document
+    .getElementById("usersNavBtn")
+    .classList.toggle(
+      "hidden",
+      !admin
+    );
+
+  document
+    .getElementById("adminHomeNavBtn")
+    .classList.toggle(
+      "hidden",
+      !admin
+    );
+
+  document
+    .getElementById("settingsNavBtn")
+    .classList.toggle(
+      "hidden",
+      !admin
+    );
+
+  document
+    .getElementById("adminReportsCard")
+    .classList.toggle(
+      "hidden",
+      !admin
+    );
+
+  document
+    .getElementById("adminSettingsCard")
+    .classList.toggle(
+      "hidden",
+      !isAdmin(currentUser)
+    );
+
+  document
+    .getElementById("reportFormCard")
+    .classList.remove("hidden");
+
+
+  /*
+    Les demandes de réinitialisation
+    sont accessibles uniquement au principal.
+  */
+
+  addPasswordRequestsButton();
+}
+
+
+function addPasswordRequestsButton() {
+
+  const existing =
+    document.getElementById(
+      "passwordRequestsNav"
+    );
+
+  if (existing) {
+    existing.remove();
+  }
+
+  if (!isMainAdmin(currentUser)) {
+    return;
+  }
+
+  const btn =
+    document.createElement("button");
+
+  btn.id =
+    "passwordRequestsNav";
+
+  btn.className =
+    "nav-btn";
+
+  btn.innerHTML =
+    "🔑 Demandes de mot de passe";
+
+  btn.onclick =
+    openRequestsModal;
+
+  document
+    .querySelector(".sidebar")
+    .appendChild(btn);
+}
+
+
+/* ============================================================
+   REFRESH GLOBAL
+============================================================ */
+
+async function refreshEverything() {
+
+  await Promise.all([
+    loadBlocks(),
+    loadReports(),
+    loadUsers(),
+    loadRequests()
+  ]);
+
+  renderUserBlocks();
+  renderReports();
+  renderUsers();
+  renderAdminBlocks();
+
+  updateStats();
+}
+
+
+/* ============================================================
+   BLOCKS
+============================================================ */
+
+async function loadBlocks() {
+
+  if (!SUPABASE_CONFIGURED) {
+    loadLocalBlocks();
+    return;
+  }
+
+  const { data, error } =
+    await sb
+      .from("information_blocks")
+      .select("*")
+      .order("position", {
+        ascending: true
+      });
+
+  if (error) {
+    console.error(error);
+    loadLocalBlocks();
+    return;
+  }
+
+  blocks = data || [];
+}
+
+
+function renderUserBlocks() {
+
+  const container =
+    document.getElementById(
+      "userInfoBlocks"
+    );
+
+  const published =
+    blocks
+      .filter(block => block.published)
+      .sort(
+        (a, b) =>
+          Number(a.position || 0) -
+          Number(b.position || 0)
+      );
+
+  if (!published.length) {
+
+    container.innerHTML = `
+      <div class="card empty">
+        Aucune information publiée pour le moment.
+      </div>
+    `;
+
+    return;
+  }
+
+
+  container.innerHTML =
+    published
+      .map(block => `
+        <article class="info-block">
+
+          <div class="info-block-header">
+            <h3>
+              ${escapeHtml(block.title)}
+            </h3>
+          </div>
+
+          <div class="info-content">
+            ${sanitizeContent(block.content_html)}
+          </div>
+
+        </article>
+      `)
+      .join("");
+}
+
+
+function sanitizeContent(html) {
+
+  /*
+    Petite protection côté client.
+    Pour une vraie sécurité serveur, utiliser
+    une politique CSP + sanitation serveur.
+  */
+
+  const temp =
+    document.createElement("div");
+
+  temp.innerHTML = html || "";
+
+  temp
+    .querySelectorAll(
+      "script, iframe, object, embed, form"
+    )
+    .forEach(el => el.remove());
+
+  temp
+    .querySelectorAll("*")
+    .forEach(el => {
+
+      [...el.attributes].forEach(attr => {
+
+        if (
+          attr.name.toLowerCase().startsWith("on")
+        ) {
+          el.removeAttribute(attr.name);
+        }
+
+      });
+
+    });
+
+  return temp.innerHTML;
+}
+
+
+function renderAdminBlocks() {
+
+  const container =
+    document.getElementById(
+      "adminBlocks"
+    );
+
+  if (!isAdmin(currentUser)) {
+    container.innerHTML = "";
+    return;
+  }
+
+
+  const ordered =
+    [...blocks].sort(
+      (a, b) =>
+        Number(a.position || 0) -
+        Number(b.position || 0)
+    );
+
+
+  if (!ordered.length) {
+
+    container.innerHTML = `
+      <div class="card empty">
+        Aucun bloc. Clique sur « Nouveau bloc ».
+      </div>
+    `;
+
+    return;
+  }
+
+
+  container.innerHTML =
+    ordered
+      .map((block, index) => `
+
+        <article
+          class="info-block admin-block"
+          data-block-id="${block.id}"
+        >
+
+          <div class="info-block-header">
+
+            <h3>
+              ${escapeHtml(block.title)}
+            </h3>
+
+            <div style="margin-top:7px;">
+              ${
+                block.published
+                  ? '<span class="badge" style="background:#dcfce7;color:#166534;">Publié</span>'
+                  : '<span class="badge" style="background:#f1f5f9;color:#475569;">Non publié</span>'
+              }
+            </div>
+
+          </div>
+
+          <div class="info-content">
+            ${sanitizeContent(block.content_html)}
+          </div>
+
+          <div class="block-actions">
+
+            <button
+              class="secondary-btn"
+              type="button"
+              onclick="editBlock('${block.id}')"
+            >
+              ✏️ Modifier
+            </button>
+
+            <button
+              class="danger-btn"
+              type="button"
+              onclick="deleteBlock('${block.id}')"
+            >
+              🗑️ Supprimer
+            </button>
+
+            <div class="move-buttons">
+
+              <button
+                class="secondary-btn"
+                type="button"
+                onclick="moveBlock('${block.id}', -1)"
+                ${index === 0 ? "disabled" : ""}
+              >
+                ↑
+              </button>
+
+              <button
+                class="secondary-btn"
+                type="button"
+                onclick="moveBlock('${block.id}', 1)"
+                ${index === ordered.length - 1 ? "disabled" : ""}
+              >
+                ↓
+              </button>
+
+            </div>
+
+          </div>
+
+        </article>
+
+      `)
+      .join("");
+}
+
+
+/* ============================================================
+   BLOCK MODAL
+============================================================ */
+
+function openNewBlockModal() {
+
+  document.getElementById(
+    "blockModalTitle"
+  ).textContent =
+    "Nouveau bloc";
+
+  document.getElementById(
+    "blockId"
+  ).value = "";
+
+  document.getElementById(
+    "blockTitle"
+  ).value = "";
+
+  document.getElementById(
+    "blockEditor"
+  ).innerHTML = "";
+
+  document.getElementById(
+    "blockPublished"
+  ).checked = true;
+
+  document
+    .getElementById("blockModal")
+    .classList.remove("hidden");
+}
+
+
+function editBlock(id) {
+
+  const block =
+    blocks.find(b => b.id === id);
+
+  if (!block) return;
+
+  document.getElementById(
+    "blockModalTitle"
+  ).textContent =
+    "Modifier le bloc";
+
+  document.getElementById(
+    "blockId"
+  ).value =
+    block.id;
+
+  document.getElementById(
+    "blockTitle"
+  ).value =
+    block.title || "";
+
+  document.getElementById(
+    "blockEditor"
+  ).innerHTML =
+    block.content_html || "";
+
+  document.getElementById(
+    "blockPublished"
+  ).checked =
+    !!block.published;
+
+  document
+    .getElementById("blockModal")
+    .classList.remove("hidden");
+}
+
+
+function closeBlockModal() {
+
+  document
+    .getElementById("blockModal")
+    .classList.add("hidden");
+}
+
+
+async function saveBlock(event) {
+
+  event.preventDefault();
+
+  if (!isAdmin(currentUser)) {
+    return;
+  }
+
+  const id =
+    document.getElementById(
+      "blockId"
+    ).value;
+
+  const title =
+    document.getElementById(
+      "blockTitle"
+    ).value.trim();
+
+  const content =
+    sanitizeContent(
+      document.getElementById(
+        "blockEditor"
+      ).innerHTML
+    );
+
+  const published =
+    document.getElementById(
+      "blockPublished"
+    ).checked;
+
+
+  if (!title) {
+    showToast("Le titre est obligatoire.");
+    return;
+  }
+
+
+  if (!SUPABASE_CONFIGURED) {
+
+    if (id) {
+
+      const block =
+        blocks.find(b => b.id === id);
+
+      if (block) {
+
+        block.title = title;
+        block.content_html = content;
+        block.published = published;
+        block.updated_at =
+          new Date().toISOString();
+
+      }
+
+    } else {
+
+      blocks.push({
+        id: uid(),
+        title,
+        content_html: content,
+        position: blocks.length,
+        published,
+        created_at:
+          new Date().toISOString(),
+        updated_at:
+          new Date().toISOString()
+      });
+
+    }
+
+    saveLocalBlocks();
+    loadLocalBlocks();
+
+  } else {
+
+    if (id) {
+
+      const { error } =
+        await sb
+          .from("information_blocks")
+          .update({
+            title,
+            content_html: content,
+            published,
+            updated_at:
+              new Date().toISOString(),
+            updated_by:
+              currentUser.id
+          })
+          .eq("id", id);
+
+      if (error) {
+        showToast(error.message);
+        return;
+      }
+
+    } else {
+
+      const maxPosition =
+        blocks.length
+          ? Math.max(
+              ...blocks.map(
+                b => Number(b.position || 0)
+              )
+            ) + 1
+          : 0;
+
+      const { error } =
+        await sb
+          .from("information_blocks")
+          .insert({
+            title,
+            content_html: content,
+            position: maxPosition,
+            published,
+            updated_by:
+              currentUser.id
+          });
+
+      if (error) {
+        showToast(error.message);
+        return;
+      }
+
+    }
+
+    await loadBlocks();
+  }
+
+
+  closeBlockModal();
+  renderAdminBlocks();
+  renderUserBlocks();
+
+  showToast("Bloc enregistré.");
+}
+
+
+async function deleteBlock(id) {
+
+  if (!isAdmin(currentUser)) return;
+
+  if (
+    !confirm(
+      "Supprimer définitivement ce bloc ?"
+    )
+  ) {
+    return;
+  }
+
+
+  if (!SUPABASE_CONFIGURED) {
+
+    blocks =
+      blocks.filter(
+        b => b.id !== id
+      );
+
+    normalizeBlockPositions();
+    saveLocalBlocks();
+
+  } else {
+
+    const { error } =
+      await sb
+        .from("information_blocks")
+        .delete()
+        .eq("id", id);
+
+    if (error) {
+      showToast(error.message);
+      return;
+    }
+
+    await loadBlocks();
+  }
+
+
+  renderAdminBlocks();
+  renderUserBlocks();
+
+  showToast("Bloc supprimé.");
+}
+
+
+async function moveBlock(id, direction) {
+
+  if (!isAdmin(currentUser)) return;
+
+  const ordered =
+    [...blocks].sort(
+      (a, b) =>
+        Number(a.position || 0) -
+        Number(b.position || 0)
+    );
+
+  const index =
+    ordered.findIndex(
+      b => b.id === id
+    );
+
+  const target =
+    index + direction;
+
+  if (
+    index < 0 ||
+    target < 0 ||
+    target >= ordered.length
+  ) {
+    return;
+  }
+
+
+  const a = ordered[index];
+  const b = ordered[target];
+
+  const oldPosition = a.position;
+  a.position = b.position;
+  b.position = oldPosition;
+
+
+  if (!SUPABASE_CONFIGURED) {
+
+    normalizeBlockPositions();
+    saveLocalBlocks();
+
+  } else {
+
+    await sb
+      .from("information_blocks")
+      .update({
+        position: a.position
+      })
+      .eq("id", a.id);
+
+    await sb
+      .from("information_blocks")
+      .update({
+        position: b.position
+      })
+      .eq("id", b.id);
+
+    await loadBlocks();
+  }
+
+
+  renderAdminBlocks();
+  renderUserBlocks();
+}
+
+
+function normalizeBlockPositions() {
+
+  blocks
+    .sort(
+      (a, b) =>
+        Number(a.position || 0) -
+        Number(b.position || 0)
+    )
+    .forEach(
+      (block, index) => {
+        block.position = index;
+      }
+    );
+}
+
+
+/* ============================================================
+   EDITOR
+============================================================ */
+
+document
+  .querySelectorAll(".tool-btn[data-command]")
+  .forEach(btn => {
+
+    btn.addEventListener(
+      "click",
+      () => {
+
+        document
+          .getElementById("blockEditor")
+          .focus();
+
+        document.execCommand(
+          btn.dataset.command,
+          false,
+          null
+        );
+
+      }
+    );
+
+  });
+
+
+document
+  .getElementById("insertLinkBtn")
+  .addEventListener(
+    "click",
+    () => {
+
+      const url =
+        prompt(
+          "URL du lien :",
+          "https://"
+        );
+
+      if (!url) return;
+
+      document
+        .getElementById("blockEditor")
+        .focus();
+
+      document.execCommand(
+        "createLink",
+        false,
+        url
+      );
+
+    }
+  );
+
+
+document
+  .getElementById("insertImageBtn")
+  .addEventListener(
+    "click",
+    () => {
+
+      document
+        .getElementById("imageInput")
+        .click();
+
+    }
+  );
+
+
+document
+  .getElementById("imageInput")
+  .addEventListener(
+    "change",
+    event => {
+
+      const file =
+        event.target.files?.[0];
+
+      if (!file) return;
+
+      const reader =
+        new FileReader();
+
+      reader.onload = () => {
+
+        document
+          .getElementById("blockEditor")
+          .focus();
+
+        document.execCommand(
+          "insertImage",
+          false,
+          reader.result
+        );
+
+      };
+
+      reader.readAsDataURL(file);
+
+      event.target.value = "";
+
+    }
+  );
+
+
+/* ============================================================
+   REPORTS
+============================================================ */
+
+async function loadReports() {
+
+  if (!SUPABASE_CONFIGURED) {
+    loadLocalReports();
+
+    reports =
+      reports.filter(
+        r => !r.resolved_at
+      );
+
+    return;
+  }
+
+
+  const { data, error } =
+    await sb
+      .from("signalements")
+      .select("*")
+      .is("resolved_at", null)
+      .order("created_at", {
+        ascending: false
+      });
+
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  reports = data || [];
+}
+
+
+function renderReports() {
+
+  const tbody =
+    document.getElementById(
+      "reportsTableBody"
+    );
+
+  if (!isAdmin(currentUser)) {
+    tbody.innerHTML = "";
+    return;
+  }
+
+
+  if (!reports.length) {
+
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="4" class="empty">
+          Aucun signalement actif.
+        </td>
+      </tr>
+    `;
+
+    return;
+  }
+
+
+  tbody.innerHTML =
+    reports
+      .map(report => {
+
+        const typeLabel =
+          report.type === "physique"
+            ? "Physique"
+            : report.type === "verbal"
+              ? "Verbal"
+              : (
+                  report.type_autre ||
+                  "Autre"
+                );
+
+        const badgeClass =
+          report.type === "physique"
+            ? "badge-physical"
+            : report.type === "verbal"
+              ? "badge-verbal"
+              : "badge-other";
+
+        const date =
+          new Date(
+            report.created_at
+          ).toLocaleString(
+            "fr-FR"
+          );
+
+        return `
+          <tr>
+
+            <td>
+              ${escapeHtml(date)}
+            </td>
+
+            <td>
+              <span class="badge ${badgeClass}">
+                ${escapeHtml(typeLabel)}
+              </span>
+            </td>
+
+            <td>
+              ${escapeHtml(report.commentaire)}
+            </td>
+
+            <td>
+              <button
+                class="success-btn"
+                type="button"
+                onclick="resolveReport('${report.id}')"
+              >
+                ✓ Réglé
+              </button>
+            </td>
+
+          </tr>
+        `;
+
+      })
+      .join("");
+}
+
+
+async function submitReport(event) {
+
+  event.preventDefault();
+
+  const type =
+    document.getElementById(
+      "reportType"
+    ).value;
+
+  const otherType =
+    document.getElementById(
+      "otherType"
+    ).value.trim();
+
+  const commentaire =
+    document.getElementById(
+      "reportComment"
+    ).value.trim();
+
+
+  if (!type || !commentaire) {
+    showToast(
+      "Merci de compléter le signalement."
+    );
+    return;
+  }
+
+
+  if (
+    type === "autre" &&
+    !otherType
+  ) {
+    showToast(
+      "Précise le type de signalement."
+    );
+    return;
+  }
+
+
+  const report = {
+    id: uid(),
+    type,
+    type_autre:
+      type === "autre"
+        ? otherType
+        : null,
+    commentaire,
+    created_at:
+      new Date().toISOString(),
+    resolved_at: null
+  };
+
+
+  if (!SUPABASE_CONFIGURED) {
+
+    reports.unshift(report);
+    saveLocalReports();
+
+  } else {
+
+    const { error } =
+      await sb
+        .from("signalements")
+        .insert({
+          type,
+          type_autre:
+            type === "autre"
+              ? otherType
+              : null,
+          commentaire
+        });
+
+    if (error) {
+      showToast(error.message);
+      return;
+    }
+
+  }
+
+
+  document
+    .getElementById("reportForm")
+    .reset();
+
+  document
+    .getElementById("otherTypeGroup")
+    .classList.add("hidden");
+
+  await loadReports();
+  renderReports();
+  updateStats();
+
+  showToast(
+    "Signalement envoyé."
+  );
+}
+
+
+async function resolveReport(id) {
+
+  if (!isAdmin(currentUser)) {
+    return;
+  }
+
+
+  if (!SUPABASE_CONFIGURED) {
+
+    const report =
+      reports.find(
+        r => r.id === id
+      );
+
+    if (report) {
+      report.resolved_at =
+        new Date().toISOString();
+    }
+
+    saveLocalReports();
+
+  } else {
+
+    const { error } =
+      await sb
+        .from("signalements")
+        .update({
+          resolved_at:
+            new Date().toISOString()
+        })
+        .eq("id", id);
+
+    if (error) {
+      showToast(error.message);
+      return;
+    }
+
+  }
+
+
+  await loadReports();
+  renderReports();
+  updateStats();
+
+  showToast(
+    "Signalement marqué comme réglé."
+  );
+}
+
+
+/* ============================================================
+   USERS
+============================================================ */
+
+async function loadUsers() {
+
+  if (!SUPABASE_CONFIGURED) {
+    loadLocalUsers();
+    return;
+  }
+
+
+  const { data, error } =
+    await sb
+      .from("profiles")
+      .select(
+        "id,first_name,last_name,role,auth_email,must_change_password,first_login_completed,created_at,last_login"
+      )
+      .order("created_at", {
+        ascending: true
+      });
+
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  users = data || [];
+}
+
+
+function renderUsers() {
+
+  const grid =
+    document.getElementById(
+      "usersGrid"
+    );
+
+  if (!isAdmin(currentUser)) {
+    grid.innerHTML = "";
+    return;
+  }
+
+
+  const query =
+    normalize(
+      document.getElementById(
+        "userSearch"
+      ).value
+    );
+
+
+  const filtered =
+    users.filter(user => {
+
+      if (isMainAdmin(user)) {
+        /*
+          Le compte principal reste visible
+          mais son nom de famille n'est jamais rendu.
+        */
+        return (
+          !query ||
+          normalize("Ziyad")
+            .includes(query)
+        );
+      }
+
+      const full =
+        `${user.first_name} ${user.last_name}`;
+
+      return (
+        !query ||
+        normalize(user.first_name)
+          .includes(query) ||
+        normalize(user.last_name)
+          .includes(query) ||
+        normalize(full)
+          .includes(query)
+      );
+
+    });
+
+
+  if (!filtered.length) {
+
+    grid.innerHTML = `
+      <div class="empty" style="grid-column:1/-1;">
+        Aucun utilisateur trouvé.
+      </div>
+    `;
+
+    return;
+  }
+
+
+  grid.innerHTML =
+    filtered
+      .map(user => {
+
+        const principal =
+          isMainAdmin(user);
+
+        return `
+          <article class="user-card">
+
+            <div class="user-name">
+              ${escapeHtml(displayName(user))}
+            </div>
+
+            <div class="user-meta">
+              ${escapeHtml(displayRole(user))}
+            </div>
+
+            ${
+              principal
+                ? `
+                  <div
+                    class="badge"
+                    style="background:#dbeafe;color:#1d4ed8;margin-bottom:10px;"
+                  >
+                    Compte protégé
+                  </div>
+                `
+                : `
+                  <div class="user-actions">
+
+                    ${
+                      isMainAdmin(currentUser)
+                        ? `
+                          <button
+                            class="warning-btn"
+                            type="button"
+                            onclick="openResetForUser('${user.id}')"
+                          >
+                            🔑 Réinitialiser
+                          </button>
+                        `
+                        : ""
+                    }
+
+                    ${
+                      isMainAdmin(currentUser)
+                        ? `
+                          <button
+                            class="danger-btn"
+                            type="button"
+                            onclick="banUser('${user.id}')"
+                          >
+                            🚫 Bannir
+                          </button>
+                        `
+                        : ""
+                    }
+
+                  </div>
+                `
+            }
+
+          </article>
+        `;
+
+      })
+      .join("");
+}
+
+
+/* ============================================================
+   RESET PASSWORD
+============================================================ */
+
+function openResetForUser(id) {
+
+  if (!isMainAdmin(currentUser)) {
+    showToast(
+      "Seul l'administrateur principal peut réinitialiser un mot de passe."
+    );
+    return;
+  }
+
+  const user =
+    users.find(
+      u => u.id === id
+    );
+
+  if (!user) return;
+
+  pendingResetUser = user;
+  pendingResetRequestId = null;
+
+  document.getElementById(
+    "resetPasswordDescription"
+  ).textContent =
+    `Réinitialisation du mot de passe de ${displayName(user)}. Après cette réinitialisation, la personne devra choisir son mot de passe personnel lors de sa prochaine connexion.`;
+
+  document.getElementById(
+    "resetPasswordInput"
+  ).value = "";
+
+  document.getElementById(
+    "resetPasswordConfirm"
+  ).value = "";
+
+  document
+    .getElementById("resetPasswordModal")
+    .classList.remove("hidden");
+}
+
+
+function closeResetPasswordModal() {
+
+  document
+    .getElementById(
+      "resetPasswordModal"
+    )
+    .classList.add("hidden");
+
+  pendingResetUser = null;
+  pendingResetRequestId = null;
+}
+
+
+async function performAdminPasswordReset(
+  user,
+  temporaryPassword
+) {
+
+  if (!isMainAdmin(currentUser)) {
+    throw new Error(
+      "Action réservée à l'administrateur principal."
+    );
+  }
+
+
+  /*
+    SUPABASE :
+    Le changement de mot de passe Auth
+    DOIT être fait côté serveur via Edge Function.
+  */
+
+  if (SUPABASE_CONFIGURED) {
+
+    const { data, error } =
+      await sb.functions.invoke(
+        "admin-reset-password",
+        {
+          body: {
+            first_name:
+              user.first_name,
+
+            last_name:
+              user.last_name,
+
+            new_password:
+              temporaryPassword,
+
+            /*
+              Après reset :
+              première connexion obligatoire.
+            */
+            must_change_password:
+              true,
+
+            first_login_completed:
+              false
+          }
+        }
+      );
+
+    if (error) {
+      throw error;
+    }
+
+    return data;
+  }
+
+
+  /*
+    MODE LOCAL / DEMO
+  */
+
+  loadLocalUsers();
+
+  const localUser =
+    users.find(
+      u => u.id === user.id
+    );
+
+  if (!localUser) {
+    throw new Error(
+      "Utilisateur introuvable."
+    );
+  }
+
+
+  localUser.password =
+    temporaryPassword;
+
+  localUser.must_change_password =
+    true;
+
+  localUser.first_login_completed =
+    false;
+
+  saveLocalUsers();
+
+  return {
+    success: true
+  };
+}
+
+
+async function submitPasswordReset(event) {
+
+  event.preventDefault();
+
+  if (!pendingResetUser) {
+    return;
+  }
+
+  if (!isMainAdmin(currentUser)) {
+    showToast(
+      "Action non autorisée."
+    );
+    return;
+  }
+
+
+  const password =
+    document.getElementById(
+      "resetPasswordInput"
+    ).value;
+
+  const confirmPassword =
+    document.getElementById(
+      "resetPasswordConfirm"
+    ).value;
+
+
+  if (password.length < 6) {
+    showToast(
+      "Le mot de passe doit contenir au moins 6 caractères."
+    );
+    return;
+  }
+
+
+  if (password !== confirmPassword) {
+    showToast(
+      "Les deux mots de passe ne correspondent pas."
+    );
+    return;
+  }
+
+
+  try {
+
+    await performAdminPasswordReset(
+      pendingResetUser,
+      password
+    );
+
+
+    /*
+      Si cette réinitialisation vient
+      d'une demande de mot de passe oublié,
+      elle est maintenant traitée.
+    */
+
+    if (
+      pendingResetRequestId &&
+      SUPABASE_CONFIGURED
+    ) {
+
+      await sb
+        .from("password_reset_requests")
+        .update({
+          handled_at:
+            new Date().toISOString(),
+          handled_by:
+            currentUser.id
+        })
+        .eq(
+          "id",
+          pendingResetRequestId
+        );
+
+    }
+
+
+    if (
+      pendingResetRequestId &&
+      !SUPABASE_CONFIGURED
+    ) {
+
+      loadLocalRequests();
+
+      const request =
+        resetRequests.find(
+          r =>
+            r.id ===
+            pendingResetRequestId
+        );
+
+      if (request) {
+        request.handled_at =
+          new Date().toISOString();
+
+        request.handled_by =
+          currentUser.id;
+      }
+
+      saveLocalRequests();
+
+    }
+
+
+    closeResetPasswordModal();
+
+    await loadUsers();
+    renderUsers();
+
+    showToast(
+      "Mot de passe réinitialisé. La prochaine connexion sera une première connexion."
+    );
+
+  } catch (error) {
+
+    console.error(error);
+
+    showToast(
+      error?.message ||
+      "Impossible de réinitialiser le mot de passe."
+    );
+
+  }
+
+}
+
+
+/* ============================================================
+   BAN
+============================================================ */
+
+async function banUser(id) {
+
+  if (!isMainAdmin(currentUser)) {
+    showToast(
+      "Seul l'administrateur principal peut bannir."
+    );
+    return;
+  }
+
+
+  const user =
+    users.find(
+      u => u.id === id
+    );
+
+  if (!user) return;
+
+
+  if (isMainAdmin(user)) {
+    showToast(
+      "Le compte principal ne peut pas être banni."
+    );
+    return;
+  }
+
+
+  if (
+    !confirm(
+      `Bannir définitivement ${displayName(user)} ? Cette action est irréversible.`
+    )
+  ) {
+    return;
+  }
+
+
+  if (!SUPABASE_CONFIGURED) {
+
+    loadLocalUsers();
+
+    const localUser =
+      users.find(
+        u => u.id === id
+      );
+
+    if (localUser) {
+      localUser.banned = true;
+    }
+
+    saveLocalUsers();
+
+  } else {
+
+    const { error } =
+      await sb
+        .from("bannissements")
+        .insert({
+          user_id: id,
+          reason:
+            "Bannissement permanent"
+        });
+
+    if (error) {
+      showToast(error.message);
+      return;
+    }
+
+  }
+
+
+  await loadUsers();
+  renderUsers();
+
+  showToast(
+    "Compte banni définitivement."
+  );
+}
+
+
+/* ============================================================
+   PASSWORD REQUESTS
+============================================================ */
+
+async function submitForgotPassword(
+  event
+) {
+
+  event.preventDefault();
+
+  const firstName =
+    document.getElementById(
+      "forgotFirstName"
+    ).value.trim();
+
+  const lastName =
+    document.getElementById(
+      "forgotLastName"
+    ).value.trim();
+
+
+  if (!firstName || !lastName) {
+    return;
+  }
+
+
+  if (!SUPABASE_CONFIGURED) {
+
+    loadLocalRequests();
+
+    resetRequests.push({
+      id: uid(),
+      first_name: firstName,
+      last_name: lastName,
+      created_at:
+        new Date().toISOString(),
+      handled_at: null,
+      handled_by: null
+    });
+
+    saveLocalRequests();
+
+  } else {
+
+    const { error } =
+      await sb
+        .from("password_reset_requests")
+        .insert({
+          first_name:
+            firstName,
+          last_name:
+            lastName
+        });
+
+    if (error) {
+      showToast(error.message);
+      return;
+    }
+
+  }
+
+
+  closeForgotModal();
+
+  showToast(
+    "Demande envoyée à l'administrateur principal."
+  );
+}
+
+
+async function loadRequests() {
+
+  /*
+    IMPORTANT :
+    En Supabase, la RLS doit empêcher
+    les autres admins de lire cette table.
+  */
+
+  if (
+    !SUPABASE_CONFIGURED
+  ) {
+
+    loadLocalRequests();
+    return;
+  }
+
+
+  if (!isMainAdmin(currentUser)) {
+    resetRequests = [];
+    return;
+  }
+
+
+  const { data, error } =
+    await sb
+      .from("password_reset_requests")
+      .select("*")
+      .is("handled_at", null)
+      .order("created_at", {
+        ascending: false
+      });
+
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  resetRequests = data || [];
+}
+
+
+async function openRequestsModal() {
+
+  if (!isMainAdmin(currentUser)) {
+    return;
+  }
+
+  await loadRequests();
+
+  const container =
+    document.getElementById(
+      "resetRequestsList"
+    );
+
+
+  if (!resetRequests.length) {
+
+    container.innerHTML = `
+      <div class="empty">
+        Aucune demande en attente.
+      </div>
+    `;
+
+  } else {
+
+    container.innerHTML =
+      resetRequests
+        .map(request => `
+
+          <div
+            class="user-card"
+            style="margin-bottom:10px;"
+          >
+
+            <div class="user-name">
+              ${escapeHtml(
+                request.first_name
+              )}
+              ${escapeHtml(
+                request.last_name
+              )}
+            </div>
+
+            <div class="user-meta">
+              ${escapeHtml(
+                new Date(
+                  request.created_at
+                ).toLocaleString(
+                  "fr-FR"
+                )
+              )}
+            </div>
+
+            <button
+              class="warning-btn"
+              type="button"
+              onclick="handleResetRequest('${request.id}')"
+            >
+              🔑 Réinitialiser
+            </button>
+
+          </div>
+
+        `)
+        .join("");
+
+  }
+
+
+  document
+    .getElementById("requestsModal")
+    .classList.remove("hidden");
+}
+
+
+function handleResetRequest(requestId) {
+
+  if (!isMainAdmin(currentUser)) {
+    return;
+  }
+
+
+  const request =
+    resetRequests.find(
+      r => r.id === requestId
+    );
+
+  if (!request) {
+    return;
+  }
+
+
+  const user =
+    users.find(
+      u =>
+        normalize(u.first_name) ===
+          normalize(request.first_name) &&
+        normalize(u.last_name) ===
+          normalize(request.last_name)
+    );
+
+
+  if (!user) {
+
+    showToast(
+      "Aucun compte correspondant à cette demande."
+    );
+
+    return;
+  }
+
+
+  pendingResetRequestId =
+    requestId;
+
+  pendingResetUser =
+    user;
+
+
+  document.getElementById(
+    "resetPasswordDescription"
+  ).textContent =
+    `Réinitialisation du mot de passe de ${displayName(user)}. La personne devra choisir son mot de passe personnel lors de sa prochaine connexion.`;
+
+  document.getElementById(
+    "resetPasswordInput"
+  ).value = "";
+
+  document.getElementById(
+    "resetPasswordConfirm"
+  ).value = "";
+
+
+  document
+    .getElementById("requestsModal")
+    .classList.add("hidden");
+
+  document
+    .getElementById("resetPasswordModal")
+    .classList.remove("hidden");
+}
+
+
+/* ============================================================
+   FIRST LOGIN
+============================================================ */
+
+function openFirstLoginModal() {
+
+  document
+    .getElementById(
+      "firstLoginModal"
+    )
+    .classList.remove("hidden");
+
+}
+
+
+async function completeFirstLogin(
+  event
+) {
+
+  event.preventDefault();
+
+  const password =
+    document.getElementById(
+      "firstLoginPassword"
+    ).value;
+
+  const confirmation =
+    document.getElementById(
+      "firstLoginPasswordConfirm"
+    ).value;
+
+
+  if (password.length < 6) {
+
+    showToast(
+      "Le mot de passe doit contenir au moins 6 caractères."
+    );
+
+    return;
+  }
+
+
+  if (password !== confirmation) {
+
+    showToast(
+      "Les deux mots de passe ne correspondent pas."
+    );
+
+    return;
+  }
+
+
+  try {
+
+    if (SUPABASE_CONFIGURED) {
+
+      const {
+        error: authError
+      } =
+        await sb.auth.updateUser({
+          password
+        });
+
+      if (authError) {
+        throw authError;
+      }
+
+
+      const {
+        error: profileError
+      } =
+        await sb
+          .from("profiles")
+          .update({
+            must_change_password: false,
+            first_login_completed: true
+          })
+          .eq(
+            "id",
+            currentUser.id
+          );
+
+      if (profileError) {
+        throw profileError;
+      }
+
+
+      currentUser.must_change_password =
+        false;
+
+      currentUser.first_login_completed =
+        true;
+
+    } else {
+
+      loadLocalUsers();
+
+      const user =
+        users.find(
+          u => u.id === currentUser.id
+        );
+
+      if (!user) {
+        throw new Error(
+          "Compte introuvable."
+        );
+      }
+
+
+      user.password =
+        password;
+
+      user.must_change_password =
+        false;
+
+      user.first_login_completed =
+        true;
+
+      saveLocalUsers();
+
+      currentUser =
+        user;
+
+    }
+
+
+    localStorage.setItem(
+      STORAGE_CURRENT_USER,
+      JSON.stringify(currentUser)
+    );
+
+
+    document
+      .getElementById(
+        "firstLoginModal"
+      )
+      .classList.add("hidden");
+
+
+    document
+      .getElementById(
+        "firstLoginForm"
+      )
+      .reset();
+
+
+    showToast(
+      "Nouveau mot de passe enregistré."
+    );
+
+  } catch (error) {
+
+    console.error(error);
+
+    showToast(
+      error?.message ||
+      "Impossible d'enregistrer le mot de passe."
+    );
+
+  }
+}
+
+
+/* ============================================================
+   MON PROPRE MOT DE PASSE
+============================================================ */
+
+function openMyPasswordModal() {
+
+  pendingResetUser =
+    currentUser;
+
+  pendingResetRequestId =
+    null;
+
+  document.getElementById(
+    "resetPasswordDescription"
+  ).textContent =
+    "Choisis ton nouveau mot de passe personnel.";
+
+  document.getElementById(
+    "resetPasswordInput"
+  ).value = "";
+
+  document.getElementById(
+    "resetPasswordConfirm"
+  ).value = "";
+
+  document
+    .getElementById(
+      "resetPasswordModal"
+    )
+    .classList.remove("hidden");
+}
+
+
+async function changeOwnPassword(
+  password
+) {
+
+  if (SUPABASE_CONFIGURED) {
+
+    const { error } =
+      await sb.auth.updateUser({
+        password
+      });
+
+    if (error) {
+      throw error;
+    }
+
+  } else {
+
+    loadLocalUsers();
+
+    const user =
+      users.find(
+        u =>
+          u.id === currentUser.id
+      );
+
+    if (!user) {
+      throw new Error(
+        "Compte introuvable."
+      );
+    }
+
+    user.password =
+      password;
+
+    user.must_change_password =
+      false;
+
+    user.first_login_completed =
+      true;
+
+    saveLocalUsers();
+
+    currentUser =
+      user;
+
+    localStorage.setItem(
+      STORAGE_CURRENT_USER,
+      JSON.stringify(currentUser)
+    );
+  }
+}
+
+
+async function submitResetModal(
+  event
+) {
+
+  event.preventDefault();
+
+  const password =
+    document.getElementById(
+      "resetPasswordInput"
+    ).value;
+
+  const confirmation =
+    document.getElementById(
+      "resetPasswordConfirm"
+    ).value;
+
+
+  if (password.length < 6) {
+    showToast(
+      "Le mot de passe doit contenir au moins 6 caractères."
+    );
+    return;
+  }
+
+
+  if (password !== confirmation) {
+    showToast(
+      "Les mots de passe ne correspondent pas."
+    );
+    return;
+  }
+
+
+  /*
+    Si on change son propre mot de passe,
+    ce n'est PAS un reset : pas de première connexion.
+  */
+
+  if (
+    pendingResetUser &&
+    currentUser &&
+    pendingResetUser.id === currentUser.id &&
+    !pendingResetRequestId
+  ) {
+
+    try {
+
+      await changeOwnPassword(
+        password
+      );
+
+      closeResetPasswordModal();
+
+      showToast(
+        "Mot de passe modifié."
+      );
+
+    } catch (error) {
+
+      showToast(
+        error?.message ||
+        "Impossible de modifier le mot de passe."
+      );
+
+    }
+
+    return;
+  }
+
+
+  /*
+    Sinon c'est une vraie réinitialisation
+    par l'administrateur principal.
+  */
+
+  await submitPasswordReset(event);
+}
+
+
+/* ============================================================
+   MAINTENANCE
+============================================================ */
+
+async function loadMaintenance() {
+
+  if (!SUPABASE_CONFIGURED) {
+    return loadLocalSettings()
+      .maintenance;
+  }
+
+
+  const { data, error } =
+    await sb
+      .from("site_settings")
+      .select("maintenance")
+      .eq("id", 1)
+      .maybeSingle();
+
+  if (error) {
+    console.error(error);
+    return false;
+  }
+
+  return !!data?.maintenance;
+}
+
+
+async function setMaintenance(value) {
+
+  if (!isMainAdmin(currentUser)) {
+    showToast(
+      "Seul l'administrateur principal peut modifier la maintenance."
+    );
+    return;
+  }
+
+
+  if (!SUPABASE_CONFIGURED) {
+
+    saveLocalSettings({
+      maintenance: value
+    });
+
+  } else {
+
+    const { error } =
+      await sb
+        .from("site_settings")
+        .upsert({
+          id: 1,
+          maintenance: value,
+          updated_at:
+            new Date().toISOString()
+        });
+
+    if (error) {
+      showToast(error.message);
+      return;
+    }
+
+  }
+
+
+  showToast(
+    value
+      ? "Maintenance activée."
+      : "Maintenance désactivée."
+  );
+}
+
+
+async function checkMaintenance() {
+
+  const maintenance =
+    await loadMaintenance();
+
+
+  if (
+    maintenance &&
+    !isMainAdmin(currentUser)
+  ) {
+
+    await logout(
+      "Le site est actuellement en maintenance."
+    );
+
+    return false;
+  }
+
+
+  document
+    .getElementById(
+      "maintenanceUserNotice"
+    )
+    .classList.toggle(
+      "hidden",
+      !maintenance
+    );
+
+
+  return true;
+}
+
+
+/* ============================================================
+   REALTIME SUPABASE
+============================================================ */
+
+function stopRealtime() {
+
+  realtimeChannels.forEach(
+    channel => {
+
+      try {
+        sb?.removeChannel(channel);
+      } catch {}
+
+    }
+  );
+
+  realtimeChannels = [];
+}
+
+
+function startRealtime() {
+
+  if (!SUPABASE_CONFIGURED) {
+    return;
+  }
+
+
+  stopRealtime();
+
+
+  /*
+    SIGNALements :
+    INSERT depuis un téléphone,
+    UPDATE quand un admin clique Réglé.
+
+    Tous les appareils administrateurs abonnés
+    reçoivent immédiatement la modification.
+  */
+
+  const reportsChannel =
+    sb
+      .channel(
+        "phare-signalements-realtime"
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "signalements"
+        },
+        async () => {
+
+          await loadReports();
+
+          renderReports();
+
+          updateStats();
+
+        }
+      )
+      .subscribe();
+
+
+  realtimeChannels.push(
+    reportsChannel
+  );
+
+
+  /*
+    BLOCS D'INFORMATION
+  */
+
+  const blocksChannel =
+    sb
+      .channel(
+        "phare-information-blocks-realtime"
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "information_blocks"
+        },
+        async () => {
+
+          await loadBlocks();
+
+          renderUserBlocks();
+
+          renderAdminBlocks();
+
+        }
+      )
+      .subscribe();
+
+
+  realtimeChannels.push(
+    blocksChannel
+  );
+
+
+  /*
+    PROFILS / UTILISATEURS
+  */
+
+  const profilesChannel =
+    sb
+      .channel(
+        "phare-profiles-realtime"
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "profiles"
+        },
+        async () => {
+
+          await loadUsers();
+
+          renderUsers();
+
+          updateStats();
+
+        }
+      )
+      .subscribe();
+
+
+  realtimeChannels.push(
+    profilesChannel
+  );
+
+
+  /*
+    MAINTENANCE
+  */
+
+  const settingsChannel =
+    sb
+      .channel(
+        "phare-settings-realtime"
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "site_settings"
+        },
+        async () => {
+
+          await checkMaintenance();
+
+        }
+      )
+      .subscribe();
+
+
+  realtimeChannels.push(
+    settingsChannel
+  );
+
+
+  /*
+    DEMANDES DE MOT DE PASSE :
+    réservé au compte principal.
+  */
+
+  if (isMainAdmin(currentUser)) {
+
+    const requestsChannel =
+      sb
+        .channel(
+          "phare-password-requests-realtime"
+        )
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table:
+              "password_reset_requests"
+          },
+          async () => {
+
+            await loadRequests();
+
+          }
+        )
+        .subscribe();
+
+
+    realtimeChannels.push(
+      requestsChannel
+    );
+
+  }
+}
+
+
+/* ============================================================
+   LOGOUT
+============================================================ */
+
+async function logout(
+  reason = null
+) {
+
+  stopRealtime();
+
+
+  if (SUPABASE_CONFIGURED) {
+
+    try {
+      await sb.auth.signOut();
+    } catch {}
+
+  }
+
+
+  currentUser = null;
+
+  localStorage.removeItem(
+    STORAGE_CURRENT_USER
+  );
+
+
+  document
+    .getElementById("app")
+    .classList.add("hidden");
+
+  document
+    .getElementById("authPage")
+    .classList.remove("hidden");
+
+
+  document
+    .getElementById("loginForm")
+    .reset();
+
+
+  if (reason) {
+    showToast(reason);
+  } else {
+    showToast(
+      "Déconnexion réussie"
+    );
+  }
+}
+
+
+/* ============================================================
+   STATS
+============================================================ */
+
+function updateStats() {
+
+  /*
+    Les statistiques peuvent être ajoutées
+    ici sans exposer le nom de famille du principal.
+  */
+
+}
+
+
+/* ============================================================
+   MODE APPAREIL
+============================================================ */
+
+function isRealPhone() {
+
+  return window.matchMedia(
+    "(max-width: 760px)"
+  ).matches;
+
+}
+
+
+function applyDeviceMode() {
+
+  /*
+    Sur téléphone réel :
+    impossible de forcer la version ordinateur.
+  */
+
+  if (isRealPhone()) {
+
+    document.body
+      .classList.add("force-phone");
+
+    forcedPhoneMode = false;
+
+    return;
+  }
+
+
+  if (forcedPhoneMode) {
+
+    document.body
+      .classList.add("force-phone");
+
+  } else {
+
+    document.body
+      .classList.remove("force-phone");
+
+  }
+
+}
+
+
+function forceDesktopMode() {
+
+  if (isRealPhone()) {
+
+    showToast(
+      "La version ordinateur ne peut pas être forcée sur téléphone."
+    );
+
+    return;
+  }
+
+  forcedPhoneMode = false;
+
+  localStorage.setItem(
+    "phare_device_mode",
+    "desktop"
+  );
+
+  applyDeviceMode();
+
+  showToast(
+    "Version ordinateur activée."
+  );
+}
+
+
+function forcePhoneMode() {
+
+  if (isRealPhone()) {
+    return;
+  }
+
+  forcedPhoneMode = true;
+
+  localStorage.setItem(
+    "phare_device_mode",
+    "phone"
+  );
+
+  applyDeviceMode();
+
+  showToast(
+    "Version téléphone activée."
+  );
+}
+
+
+function loadDeviceMode() {
+
+  const mode =
+    localStorage.getItem(
+      "phare_device_mode"
+    );
+
+  forcedPhoneMode =
+    mode === "phone";
+
+  applyDeviceMode();
+}
+
+
+/* ============================================================
+   MODALS
+============================================================ */
+
+function closeForgotModal() {
+
+  document
+    .getElementById(
+      "forgotModal"
+    )
+    .classList.add("hidden");
+
+}
+
+
+function closeRequestsModal() {
+
+  document
+    .getElementById(
+      "requestsModal"
+    )
+    .classList.add("hidden");
+
+}
+
+
+/* ============================================================
+   EVENTS
+============================================================ */
+
+document
+  .getElementById("loginForm")
+  .addEventListener(
+    "submit",
+    async event => {
+
+      event.preventDefault();
+
+      const firstName =
+        document.getElementById(
+          "loginFirstName"
+        ).value.trim();
+
+      const lastName =
+        document.getElementById(
+          "loginLastName"
+        ).value.trim();
+
+      const password =
+        document.getElementById(
+          "loginPassword"
+        ).value;
+
+
+      try {
+
+        await login(
+          firstName,
+          lastName,
+          password
+        );
+
+        showToast(
+          "Connexion réussie."
+        );
+
+      } catch (error) {
+
+        console.error(error);
+
+        showToast(
+          error?.message ||
+          "Connexion impossible."
+        );
+
+      }
+
+    }
+  );
+
+
+document
+  .getElementById("forgotPasswordBtn")
+  .addEventListener(
+    "click",
+    () => {
+
+      document
+        .getElementById("forgotModal")
+        .classList.remove("hidden");
+
+    }
+  );
+
+
+document
+  .getElementById("closeForgotBtn")
+  .addEventListener(
+    "click",
+    closeForgotModal
+  );
+
+
+document
+  .getElementById("forgotForm")
+  .addEventListener(
+    "submit",
+    submitForgotPassword
+  );
+
+
+document
+  .getElementById("reportType")
+  .addEventListener(
+    "change",
+    event => {
+
+      const other =
+        event.target.value === "autre";
+
+      document
+        .getElementById(
+          "otherTypeGroup"
+        )
+        .classList.toggle(
+          "hidden",
+          !other
+        );
+
+    }
+  );
+
+
+document
+  .getElementById("reportForm")
+  .addEventListener(
+    "submit",
+    submitReport
+  );
+
+
+document
+  .getElementById("userSearch")
+  .addEventListener(
+    "input",
+    renderUsers
+  );
+
+
+document
+  .getElementById("newBlockBtn")
+  .addEventListener(
+    "click",
+    openNewBlockModal
+  );
+
+
+document
+  .getElementById("closeBlockBtn")
+  .addEventListener(
+    "click",
+    closeBlockModal
+  );
+
+
+document
+  .getElementById("blockForm")
+  .addEventListener(
+    "submit",
+    saveBlock
+  );
+
+
+document
+  .getElementById("closeResetPasswordBtn")
+  .addEventListener(
+    "click",
+    closeResetPasswordModal
+  );
+
+
+document
+  .getElementById("resetPasswordForm")
+  .addEventListener(
+    "submit",
+    submitResetModal
+  );
+
+
+document
+  .getElementById("firstLoginForm")
+  .addEventListener(
+    "submit",
+    completeFirstLogin
+  );
+
+
+document
+  .getElementById("myPasswordBtn")
+  .addEventListener(
+    "click",
+    openMyPasswordModal
+  );
+
+
+document
+  .getElementById("closeRequestsBtn")
+  .addEventListener(
+    "click",
+    closeRequestsModal
+  );
+
+
+document
+  .getElementById("maintenanceToggle")
+  .addEventListener(
+    "change",
+    event => {
+
+      setMaintenance(
+        event.target.checked
+      );
+
+    }
+  );
+
+
+document
+  .getElementById("desktopModeBtn")
+  .addEventListener(
+    "click",
+    forceDesktopMode
+  );
+
+
+document
+  .getElementById("phoneModeBtn")
+  .addEventListener(
+    "click",
+    forcePhoneMode
+  );
+
+
+document
+  .getElementById("logoutBtn")
+  .addEventListener(
+    "click",
+    () => logout()
+  );
+
+
+document
+  .getElementById("sidebarLogout")
+  .addEventListener(
+    "click",
+    () => logout()
+  );
+
+
+window.addEventListener(
+  "resize",
+  applyDeviceMode
+);
+
+window.addEventListener(
+  "orientationchange",
+  applyDeviceMode
+);
+
+window.addEventListener(
+  "pageshow",
+  applyDeviceMode
+);
+
+
+/* ============================================================
+   INITIALISATION
+============================================================ */
+
+async function initializeApp() {
+
+  initializeLocalData();
+
+  loadDeviceMode();
+
+
+  /*
+    Restauration d'une session locale.
+  */
+
+  if (!SUPABASE_CONFIGURED) {
+
+    const saved =
+      localStorage.getItem(
+        STORAGE_CURRENT_USER
+      );
+
+    if (saved) {
+
+      try {
+
+        currentUser =
+          JSON.parse(saved);
+
+        loadLocalUsers();
+
+        const freshUser =
+          users.find(
+            u =>
+              u.id === currentUser.id
+          );
+
+        if (freshUser) {
+          currentUser =
+            freshUser;
+        }
+
+        if (
+          currentUser &&
+          currentUser.banned
+        ) {
+
+          currentUser = null;
+
+          localStorage.removeItem(
+            STORAGE_CURRENT_USER
+          );
+
+        }
+
+      } catch {
+
+        currentUser = null;
+
+      }
+
+    }
+
+  } else {
+
+    /*
+      Supabase session existante.
+    */
+
+    const {
+      data: {
+        session
+      }
+    } =
+      await sb.auth.getSession();
+
+    if (session?.user) {
+
+      const {
+        data: profile
+      } =
+        await sb
+          .from("profiles")
+          .select("*")
+          .eq(
+            "id",
+            session.user.id
+          )
+          .maybeSingle();
+
+      if (profile) {
+
+        const {
+          data: bans
+        } =
+          await sb
+            .from("bannissements")
+            .select("id")
+            .eq(
+              "user_id",
+              profile.id
+            )
+            .limit(1);
+
+        if (
+          bans &&
+          bans.length
+        ) {
+
+          await sb.auth.signOut();
+
+        } else {
+
+          currentUser = profile;
+
+        }
+
+      }
+
+    }
+
+  }
+
+
+  if (currentUser) {
+
+    const allowed =
+      await checkMaintenance();
+
+    if (allowed) {
+
+      showApp();
+
+      await refreshEverything();
+
+      startRealtime();
+
+      if (
+        currentUser.must_change_password
+      ) {
+        openFirstLoginModal();
+      }
+
+    }
+
+  }
+
+}
+
+
+initializeApp();
+
+
+/* ============================================================
+   AUTH STATE SUPABASE
+============================================================ */
+
+if (SUPABASE_CONFIGURED) {
+
+  sb.auth.onAuthStateChange(
+    async (event, session) => {
+
+      if (
+        event === "SIGNED_OUT"
+      ) {
+
+        currentUser = null;
+
+        stopRealtime();
+
+        document
+          .getElementById("app")
+          .classList.add("hidden");
+
+        document
+          .getElementById("authPage")
+          .classList.remove("hidden");
+
+        return;
+      }
+
+
+      if (
+        session &&
+        event === "SIGNED_IN"
+      ) {
+
+        const {
+          data: profile
+        } =
+          await sb
+            .from("profiles")
+            .select("*")
+            .eq(
+              "id",
+              session.user.id
+            )
+            .maybeSingle();
+
+        if (!profile) return;
+
+        currentUser =
+          profile;
+
+        localStorage.setItem(
+          STORAGE_CURRENT_USER,
+          JSON.stringify(profile)
+        );
+
+        const allowed =
+          await checkMaintenance();
+
+        if (!allowed) return;
+
+        showApp();
+
+        await refreshEverything();
+
+        startRealtime();
+
+        if (
+          profile.must_change_password
+        ) {
+          openFirstLoginModal();
+        }
+
+      }
+
+    }
+  );
+
+}
+
+
+/* ============================================================
+   PERIODIC MAINTENANCE CHECK
+============================================================ */
+
+setInterval(
+  async () => {
+
+    if (!currentUser) return;
+
+    await checkMaintenance();
+
+  },
+  15000
+);
+
+</script>
+
+</body>
+</html>
